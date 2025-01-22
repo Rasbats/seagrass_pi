@@ -5,7 +5,7 @@
  * Author:   Mike Rossiter
  *
  ***************************************************************************
- *   Copyright (C) 2013 by Mike Rossiter                                   *
+ *   Copyright (C) 2025 by Mike Rossiter                                   *
  *   $EMAIL$                                                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,12 +23,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************
+ * Massive thanks here:
+ * https://stackoverflow.com/questions/14149099/raycasting-algorithm-with-gps-coordinates
+ * 
  */
 
 #include "seagrassgui_impl.h"
+#include "icons.h"
 #include "seagrass_pi.h"
 #include "seagrassgui.h"
-#include "icons.h"
 
 #include "wx/dir.h"
 #include <cmath>
@@ -57,7 +60,6 @@ Dlg::Dlg(wxWindow* parent, seagrass_pi* ppi)
 
     pPlugIn->m_bShowseagrass = false;
 
-
 #ifdef __ANseagrassOID__
 
     m_binResize = false;
@@ -69,8 +71,6 @@ Dlg::Dlg(wxWindow* parent, seagrass_pi* ppi)
     Connect(wxEVT_MOTION, wxMouseEventHandler(Dlg::OnMouseEvent));
 
 #endif
-
-
 }
 
 Dlg::~Dlg() { }
@@ -206,7 +206,6 @@ void Dlg::sizeminus(wxCommandEvent& event)
     g_Window->SetSize(minusSize);
 }
 
-
 #endif // End of Android functions for move/resize
 
 void Dlg::Addpoint(TiXmlElement* Route, wxString ptlat, wxString ptlon,
@@ -235,7 +234,7 @@ void Dlg::Addpoint(TiXmlElement* Route, wxString ptlat, wxString ptlon,
     // done adding point
 }
 
-void Dlg::OnPSGPX(wxCommandEvent& event) { Calculate(event, true, 1); }
+void Dlg::OnPSGPX(wxCommandEvent& event) { OpenXML(); }
 
 void Dlg::OnClose(wxCloseEvent& event) { pPlugIn->OnseagrassDialogClose(); }
 
@@ -248,47 +247,47 @@ bool Dlg::OpenXML()
     int response = wxID_CANCEL;
     int my_count = 0;
 
-    wxArrayString file_array;
+    wxString CurrentDocPath;
     wxString filename;
 
-    if (m_gpx_path == wxEmptyString) {
-        wxFileName fn;
-        wxString tmp_path;
+    wxString px, py;
+    wxString inters = "";
 
-        tmp_path = GetPluginDataDir("seagrass_pi");
-        fn.SetPath(tmp_path);
-        fn.AppendDir(_T("data"));
+    wxString s = "/";
+    const char* pName = "seagrass_pi";
+    wxString m_gpx_path = GetPluginDataDir(pName) + s + "data" + s;
 
-        m_gpx_path = fn.GetFullPath();
-    }
+    // wxMessageBox(m_gpx_path);
 
-    wxFileDialog openDialog(this, _("Import GPX Route file"), m_gpx_path,
-        wxT(""), wxT("GPX files (*.gpx)|*.gpx|All files (*.*)|*.*"),
-        wxFD_OPEN | wxFD_MULTIPLE);
-    response = openDialog.ShowModal();
-    if (response == wxID_OK) {
-        openDialog.GetPaths(file_array);
+    wxFileDialog* OpenDialog = new wxFileDialog(this,
+        _("Import GPX Route file"), m_gpx_path, wxT(""),
+        wxT("GPX files (*.gpx)|*.gpx|All files (*.*)|*.*"), wxFD_OPEN);
+    if (OpenDialog->ShowModal()
+        == wxID_OK) { // if the user click "Open" instead of "Cancel"
 
-        //    Record the currently selected directory for later use
-        if (file_array.GetCount()) {
-            wxFileName fn(file_array[0]);
-            filename = file_array[0];
-            m_gpx_path = fn.GetPath();
+        if (OpenDialog->GetPath() != wxEmptyString) {
+            filename = OpenDialog->GetPath();
+            // wxMessageBox(filename);
+        } else {
+            wxMessageBox(_("No file selected"));
+            return false;
         }
-    } else if (response == wxID_CANCEL) {
-        return false;
     }
+
+    // Clean up after ourselves
+    OpenDialog->Destroy();
 
     TiXmlDocument doc;
     wxString error;
-    wxProgressDialog* progressdialog = NULL;
 
     if (!doc.LoadFile(filename.mb_str())) {
         FAIL(_("Failed to load file: ") + filename);
+
     } else {
         TiXmlElement* root = doc.RootElement();
-        if (!strcmp(root->Value(), "rte"))
-            FAIL(_("rte Invalid xml file"));
+
+        if (!strcmp(root->Value(), "trk"))
+            FAIL(_("trk Invalid xml file"));
 
         int count = 0;
         for (TiXmlElement* e = root->FirstChildElement(); e;
@@ -296,45 +295,83 @@ bool Dlg::OpenXML()
             count++;
 
         int i = 0;
+        int n = 0;
+        Point my_point;
+        my_point.x = 999;
+        my_point.y = 999;
+        m_points.clear();
+
         for (TiXmlElement* e = root->FirstChildElement(); e;
              e = e->NextSiblingElement(), i++) {
-            if (progressdialog) {
-                if (!progressdialog->Update(i))
-                    return true;
-            } else {
-                if (1) {
-                    progressdialog = new wxProgressDialog(_("Route"),
-                        _("Loading"), count, this,
-                        wxPD_CAN_ABORT | wxPD_ELAPSED_TIME
-                            | wxPD_REMAINING_TIME);
+
+            // wxMessageBox(e->Value());
+            if (!strcmp(e->Value(), "trk")) {
+
+                for (TiXmlElement* f = e->FirstChildElement(); f;
+                     f = f->NextSiblingElement()) {
+
+                    if (!strcmp(f->Value(), "trkseg")) {
+
+                        for (TiXmlElement* g = f->FirstChildElement(); g;
+                             g = g->NextSiblingElement()) {
+
+                            // wxMessageBox(g->Value());
+
+                            if (!strcmp(g->Value(), "trkpt")) {
+
+                                wxString rte_lat
+                                    = wxString::FromUTF8(g->Attribute("lat"));
+                                wxString rte_lon
+                                    = wxString::FromUTF8(g->Attribute("lon"));
+
+                                // wxMessageBox(rte_lat);
+                                double value = 666;
+                                rte_lat.ToDouble(&value);
+                                my_point.y = value;
+                                rte_lon.ToDouble(&value);
+                                my_point.x = value;
+
+                                // wxString inters = wxString::Format("%f",
+                                // my_point.x); wxMessageBox(inters);
+
+                                m_points.push_back(my_point);
+                            }
+                        }
+                    }
                 }
             }
-
-            for (TiXmlElement* f = e->FirstChildElement(); f;
-                 f = f->NextSiblingElement()) {
-                if (!strcmp(f->Value(), "rtept")) {
-                    wxString rte_lat = wxString::FromUTF8(f->Attribute("lat"));
-                    wxString rte_lon = wxString::FromUTF8(f->Attribute("lon"));
-
-                    my_position.lat = rte_lat;
-                    my_position.lon = rte_lon;
-                    my_positions.push_back(my_position);
-                } // else if(!strcmp(f->Value(), "extensions")) {
-                // rte_start =
-                // wxString::FromUTF8(f->Attribute("opencpn:start"));
-                // rte_end =
-                // wxString::FromUTF8(f->Attribute("opencpn:end"));
-
-                //}
-            }
-        }
+        }           
     }
+    double myval = 0;
 
-    delete progressdialog;
+    py = m_lat->GetValue();
+    if (!py.ToDouble(&myval)) { /* error! */
+    };
+    point.y = myval;
+
+    //inters = wxString::Format("%f", point.y);
+    //wxMessageBox(inters);
+
+    px = m_lon->GetValue();
+    if (!px.ToDouble(&myval)) { /* error! */
+    };
+    point.x = myval;
+
+    //inters = wxString::Format("%f", point.x);
+    //wxMessageBox(inters);
+
+    // point.x = 4.125299;
+    // point.y = 50.347776;
+
+    bool is_inside = pointInPolygon(point, m_points);
+    if (is_inside)
+        wxMessageBox("inside");
+    else
+        wxMessageBox("outside");
+
     return true;
 
 failed:
-    delete progressdialog;
 
     wxMessageDialog mdlg(this, error, _("seagrass"), wxOK | wxICON_ERROR);
     mdlg.ShowModal();
@@ -342,337 +379,40 @@ failed:
     return false;
 }
 
-void Dlg::Calculate(wxCommandEvent& event, bool write_file, int Pattern)
+bool Dlg::pointInPolygon(Point& p, vector<Point>& polygon)
 {
-    if (OpenXML()) {
+    int c = 0;
+    Point p1 = p;
+    int n = polygon.size(); // 4
+    vector<Point>::iterator it;
 
-        bool error_occured = false;
-        // double dist, fwdAz, revAz;
+    Point p0;
+    p0.x = 0;
+    p0.y = 0;
+   
+    p0 = m_points[n-1];
 
-        double lat1, lon1;
-        // if(!this->m_Lat1->GetValue().ToDouble(&lat1)){ lat1=0.0;}
-        // if(!this->m_Lon1->GetValue().ToDouble(&lon1)){ lon1=0.0;}
-        int num_hours;
-
-        num_hours = this->m_Nship->GetSelection();
-
-        wxString defaultFileName;
-        defaultFileName = this->m_Route->GetValue();
-
-        lat1 = 0.0;
-        lon1 = 0.0;
-        // if (error_occured) wxMessageBox(_T("error in conversion of
-        // input coordinates"));
-
-        // error_occured=false;
-        wxString s;
-        if (write_file) {
-            wxFileDialog dlg(this, _("Export seagrass Positions in GPX file as"),
-                wxEmptyString, defaultFileName,
-                _T("GPX files (*.gpx)|*.gpx|All files (*.*)|*.*"),
-                wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-            if (dlg.ShowModal() == wxID_CANCEL) {
-                error_occured = true; // the user changed idea...
-                return;
-            }
-
-            // dlg.ShowModal();
-            s = dlg.GetPath();
-            //  std::cout<<s<< std::endl;
-            if (dlg.GetPath() == wxEmptyString) {
-                error_occured = true;
-                if (dbg)
-                    printf("Empty Path\n");
-            }
-        }
-
-        // Validate input ranges
-        if (!error_occured) {
-            if (std::abs(lat1) > 90) {
-                error_occured = true;
-            }
-            if (std::abs(lon1) > 180) {
-                error_occured = true;
-            }
-            if (error_occured)
-                wxMessageBox(_("error in input range validation"));
-        }
-
-        // Start GPX
-        TiXmlDocument doc;
-        TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");
-        doc.LinkEndChild(decl);
-        TiXmlElement* root = new TiXmlElement("gpx");
-        TiXmlElement* Route = new TiXmlElement("rte");
-        TiXmlElement* RouteName = new TiXmlElement("name");
-        TiXmlText* text4 = new TiXmlText(this->m_Route->GetValue().ToUTF8());
-        TiXmlText* textSpeed
-            = new TiXmlText(this->m_Speed_PS->GetValue().ToUTF8());
-
-        if (write_file) {
-            doc.LinkEndChild(root);
-            root->SetAttribute("version", "0.1");
-            root->SetAttribute("creator", "seagrass_pi by Rasbats");
-            root->SetAttribute(
-                "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            root->SetAttribute("xmlns:gpxx",
-                "http://www.garmin.com/xmlschemas/GpxExtensions/v3");
-            root->SetAttribute("xsi:schemaLocation",
-                "http://www.topografix.com/GPX/1/1 "
-                "http://www.topografix.com/GPX/1/1/gpx.xsd");
-            root->SetAttribute("xmlns:opencpn", "http://www.opencpn.org");
-            Route->LinkEndChild(RouteName);
-            RouteName->LinkEndChild(text4);
-
-            TiXmlElement* Extensions = new TiXmlElement("extensions");
-
-            TiXmlElement* StartN = new TiXmlElement("opencpn:start");
-            TiXmlText* text5 = new TiXmlText("Start");
-            Extensions->LinkEndChild(StartN);
-            StartN->LinkEndChild(text5);
-
-            TiXmlElement* EndN = new TiXmlElement("opencpn:end");
-            TiXmlText* text6 = new TiXmlText("End");
-            Extensions->LinkEndChild(EndN);
-            EndN->LinkEndChild(text6);
-
-            TiXmlElement* Speed = new TiXmlElement("opencpn:planned_speed");
-            Extensions->LinkEndChild(Speed);
-            Speed->LinkEndChild(textSpeed);
-
-            Route->LinkEndChild(Extensions);
-        }
-
-        switch (Pattern) {
-        case 1: {
-            if (dbg)
-                cout << "seagrass Calculation\n";
-            double speed = 5;
-            int interval = 1;
-
-            if (!this->m_Speed_PS->GetValue().ToDouble(&speed)) {
-                speed = 5.0;
-            } // 5 kts default speed
-            interval = m_Nship->GetCurrentSelection(); // S=1
-
-            interval += 1;
-
-            speed = speed * (double)interval;
-
-            int n = 0;
-            // int multiplier=1;
-            double lati, loni;
-            double latN[100], lonN[100];
-            double latF, lonF;
-
-            Position my_point;
-
-            double value, value1;
-
-            for (std::vector<Position>::iterator it = my_positions.begin();
-                 it != my_positions.end(); it++) {
-
-                if (!(*it).lat.ToDouble(&value)) { /* error! */
-                }
-                lati = value;
-                if (!(*it).lon.ToDouble(&value1)) { /* error! */
-                }
-                loni = value1;
-
-                latN[n] = lati;
-                lonN[n] = loni;
-
-                n++; // 0,1,2,3
-            }
-
-            my_positions.clear();
-
-            n--; // n = 2,  0,1,2
-            int routepoints = n + 1; // 3
-
-            double myDist, myBrng, myDistForBrng;
-            int count_pts;
-            double remaining_dist, myLast, route_dist;
-            remaining_dist = 0;
-            route_dist = 0;
-            myLast = 0;
-            myDistForBrng = 0;
-            double total_dist = 0;
-            int i, c;
-            bool skip = false;
-            bool inloop = false;
-            bool setF = false;
-
-            latF = latN[0];
-            lonF = lonN[0];
-
-            // Start of new logic
-            for (i = 0; i < n; i++) { // n is number of routepoints
-
-                // save the routepoint
-                my_point.lat = wxString::Format(wxT("%f"), latN[i]);
-                my_point.lon = wxString::Format(wxT("%f"), lonN[i]);
-                my_point.routepoint = 1;
-                my_point.wpt_num = wxString::Format(wxT("%d"), (int)i);
-                my_points.push_back(my_point);
-
-                if (i == 0) { // First F is a routepoint
-                    latF = latN[i];
-                    lonF = lonN[i];
-                }
-
-                DistanceBearingMercator(
-                    latN[i + 1], lonN[i + 1], latF, lonF, &myDist, &myBrng);
-
-                total_dist = total_dist + myDist; //
-
-                if (total_dist > speed) {
-                    //
-                    // seagrass point is before the next route point
-                    //
-                    route_dist = total_dist
-                        - myDist; // route_dist is the distance between
-                                  // the previous seagrass and the route point
-                    remaining_dist
-                        = speed - route_dist; // distance between route
-                                              // point and next seagrass
-
-                    DistanceBearingMercator(latN[i + 1], lonN[i + 1], latN[i],
-                        lonN[i], &myDist, &myBrng);
-                    destLoxodrome(
-                        latN[i], lonN[i], myBrng, remaining_dist, &lati, &loni);
-
-                    // Put in the seagrass point after the route point
-                    my_point.lat = wxString::Format(wxT("%f"), lati);
-                    my_point.lon = wxString::Format(wxT("%f"), loni);
-                    my_point.routepoint = 0;
-                    my_points.push_back(my_point);
-
-                    latF = lati;
-                    lonF = loni;
-
-                    total_dist = 0;
-
-                    //
-                    //
-                    DistanceBearingMercator(latN[i + 1], lonN[i + 1], latF,
-                        lonF, &myDistForBrng,
-                        &myBrng); // Distance between route points
-
-                    if (myDistForBrng > speed) {
-                        //
-                        //
-                        // put in the seagrass positions
-                        //
-                        count_pts = (int)floor(myDistForBrng / speed);
-                        //
-                        remaining_dist = myDistForBrng - (count_pts * speed);
-                        DistanceBearingMercator(latN[i + 1], lonN[i + 1], latF,
-                            lonF, &myDistForBrng, &myBrng);
-
-                        for (c = 1; c <= count_pts; c++) {
-                            destLoxodrome(
-                                latF, lonF, myBrng, speed * c, &lati, &loni);
-                            // print mid points
-                            my_point.lat = wxString::Format(wxT("%f"), lati);
-                            my_point.lon = wxString::Format(wxT("%f"), loni);
-                            my_point.routepoint = 0;
-                            my_points.push_back(my_point);
-                            //	End of prints
-                        }
-
-                        latF = lati;
-                        lonF = loni;
-
-                        total_dist = 0;
-                        //
-                        //
-                        // All the seagrass positions inserted for this leg
-                    }
-
-                    if (total_dist == 0) {
-                        DistanceBearingMercator(latN[i + 1], lonN[i + 1], latF,
-                            lonF, &myDistForBrng, &myBrng);
-                        total_dist = myDistForBrng; // distance between seagrass and
-                                                    // the next route point
-                        latF = latN[i + 1];
-                        lonF = lonN[i + 1];
-                    }
-
-                } else {
-                    //
-                    latF = latN[i + 1];
-                    lonF = lonN[i + 1];
-                    //
-                    //
-                    //
-                    //
-                } //
-            }
-            // End of new logic
-            // print the last routepoint
-            my_point.lat = wxString::Format(wxT("%f"), latN[i]);
-            my_point.lon = wxString::Format(wxT("%f"), lonN[i]);
-            my_point.routepoint = 1;
-            my_point.wpt_num = wxString::Format(wxT("%d"), (int)i);
-            my_points.push_back(my_point);
-            //
-
-            for (std::vector<Position>::iterator itOut = my_points.begin();
-                 itOut != my_points.end(); itOut++) {
-                // wxMessageBox((*it).lat, _T("*it.lat"));
-
-                double value, value1;
-                if (!(*itOut).lat.ToDouble(&value)) { /* error! */
-                }
-                lati = value;
-                if (!(*itOut).lon.ToDouble(&value1)) { /* error! */
-                }
-                loni = value1;
-
-                if ((*itOut).routepoint == 1) {
-                    if (write_file) {
-                        Addpoint(Route, wxString::Format(wxT("%f"), lati),
-                            wxString::Format(wxT("%f"), loni), (*itOut).wpt_num,
-                            _T("diamond"), _T("WPT"));
-                    }
-                } else {
-                    if ((*itOut).routepoint == 0) {
-                        if (write_file) {
-                            Addpoint(Route, wxString::Format(wxT("%f"), lati),
-                                wxString::Format(wxT("%f"), loni), _T("seagrass"),
-                                _T("square"), _T("WPT"));
-                        }
-                    }
+    for (it = polygon.begin(); it != polygon.end(); ++it) {
+        if (p0.y != it->y) {
+            // scale latitude of $test_point so that $p0 maps to 0 and $p1 to 1:
+            double interp = (p.y - p0.y) / (it->y - p0.y);
+            // does the edge intersect the latitude of $test_point?
+            // (note: use >= and < to avoid double-counting exact endpoint hits)
+            if (interp >= 0 && interp < 1) {
+                // longitude of the edge at the latitude of the test point:
+                // (could use fancy spherical interpolation here, but for small
+                // regions linear interpolation should be fine)
+                double longi = interp * it->x + (1 - interp) * p0.x;
+                // is the intersection east of the test point?
+                if (longi < p.x) {
+                    // if so, count it:
+                    c++;
                 }
             }
-
-            my_points.clear();
-            break;
         }
-
-        default: { // Note the colon, not a semicolon
-            cout << "Error, bad input, quitting\n";
-            break;
-        }
-        }
-
-        if (write_file) {
-            root->LinkEndChild(Route);
-            // check if string ends with .gpx or .GPX
-            if (!s.EndsWith(_T(".gpx"))) {
-                s = s + _T(".gpx");
-            }
-            wxCharBuffer buffer = s.ToUTF8();
-            if (dbg)
-                std::cout << buffer.data() << std::endl;
-            doc.SaveFile(buffer.data());
-        }
-        //} //end of if no error occured
-
-        if (error_occured == true) {
-            wxLogMessage(_("Error in calculation. Please check input!"));
-            wxMessageBox(_("Error in calculation. Please check input!"));
-        }
+        p0 = *it;
     }
+    // if the number of edges we passed through is even, then it's not in the
+    // poly.
+    return c % 2 != 0;
 }

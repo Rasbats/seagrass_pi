@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version 4.0.0-0-g0efcecf)
+// C++ code generated with wxFormBuilder (version 4.2.1-0-g80c4cb6)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO *NOT* EDIT THIS FILE!
@@ -19,7 +19,7 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	wxBoxSizer* bSizer7;
 	bSizer7 = new wxBoxSizer( wxVERTICAL );
 
-	m_staticText1511 = new wxStaticText( this, wxID_ANY, wxT("seagrass Options"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText1511 = new wxStaticText( this, wxID_ANY, wxT("Vessel location"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText1511->Wrap( -1 );
 	m_staticText1511->SetFont( wxFont( 20, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Arial") ) );
 
@@ -34,39 +34,15 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	wxBoxSizer* bSizer14111112;
 	bSizer14111112 = new wxBoxSizer( wxHORIZONTAL );
 
-	m_staticText32111112 = new wxStaticText( this, wxID_ANY, wxT("Planned         \nSpeed           "), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText32111112 = new wxStaticText( this, wxID_ANY, wxT("Latitude    "), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText32111112->Wrap( -1 );
 	bSizer14111112->Add( m_staticText32111112, 0, wxALL, 5 );
 
-	m_Speed_PS = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer14111112->Add( m_Speed_PS, 0, wxALL, 5 );
-
-	m_staticText33111111 = new wxStaticText( this, wxID_ANY, wxT("kts"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_staticText33111111->Wrap( -1 );
-	bSizer14111112->Add( m_staticText33111111, 0, wxALL, 5 );
+	m_lat = new wxTextCtrl( this, wxID_ANY, wxT("50.347776"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer14111112->Add( m_lat, 0, wxALL, 5 );
 
 
 	bSizer1311->Add( bSizer14111112, 0, wxEXPAND, 5 );
-
-	wxBoxSizer* bSizer14111111;
-	bSizer14111111 = new wxBoxSizer( wxHORIZONTAL );
-
-	m_staticText32111111 = new wxStaticText( this, wxID_ANY, wxT("Interval            "), wxDefaultPosition, wxDefaultSize, 0 );
-	m_staticText32111111->Wrap( -1 );
-	bSizer14111111->Add( m_staticText32111111, 0, wxALL, 5 );
-
-	wxString m_NshipChoices[] = { wxT("1"), wxT("2"), wxT("3"), wxT("4"), wxT("5"), wxT("6") };
-	int m_NshipNChoices = sizeof( m_NshipChoices ) / sizeof( wxString );
-	m_Nship = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_NshipNChoices, m_NshipChoices, 0 );
-	m_Nship->SetSelection( 0 );
-	bSizer14111111->Add( m_Nship, 0, wxALL, 5 );
-
-	m_staticText3311111 = new wxStaticText( this, wxID_ANY, wxT("Hours"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_staticText3311111->Wrap( -1 );
-	bSizer14111111->Add( m_staticText3311111, 0, wxALL, 5 );
-
-
-	bSizer1311->Add( bSizer14111111, 0, wxEXPAND, 5 );
 
 
 	bSizer9111->Add( bSizer1311, 0, wxEXPAND, 5 );
@@ -74,12 +50,12 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	wxBoxSizer* bSizer14;
 	bSizer14 = new wxBoxSizer( wxHORIZONTAL );
 
-	m_staticText7 = new wxStaticText( this, wxID_ANY, wxT("Route / GPX   \nfile name     "), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText7 = new wxStaticText( this, wxID_ANY, wxT("Longitude"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText7->Wrap( -1 );
 	bSizer14->Add( m_staticText7, 0, wxALL, 5 );
 
-	m_Route = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer14->Add( m_Route, 0, wxALL, 5 );
+	m_lon = new wxTextCtrl( this, wxID_ANY, wxT("4.125299"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer14->Add( m_lon, 0, wxALL, 5 );
 
 
 	bSizer9111->Add( bSizer14, 0, wxEXPAND, 5 );
@@ -90,29 +66,11 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	wxBoxSizer* bSizer71;
 	bSizer71 = new wxBoxSizer( wxVERTICAL );
 
-	m_button3111 = new wxButton( this, wxID_ANY, wxT("Generate GPX"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_button3111 = new wxButton( this, wxID_ANY, wxT("Test for inside/outside habitat"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer71->Add( m_button3111, 0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 5 );
-
-	m_staticText71 = new wxStaticText( this, wxID_ANY, wxT("Imports an existing GPX file\n... then makes and saves a new route file\n... (GPX) with added seagrass positions"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_staticText71->Wrap( -1 );
-	bSizer71->Add( m_staticText71, 0, wxALL, 5 );
 
 
 	bSizer9111->Add( bSizer71, 0, wxEXPAND, 5 );
-
-	wxFlexGridSizer* fgSizer1;
-	fgSizer1 = new wxFlexGridSizer( 1, 2, 0, 0 );
-	fgSizer1->SetFlexibleDirection( wxBOTH );
-	fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-
-	m_button2 = new wxButton( this, wxID_ANY, wxT("++"), wxDefaultPosition, wxDefaultSize, 0 );
-	fgSizer1->Add( m_button2, 0, wxALL, 5 );
-
-	m_button3 = new wxButton( this, wxID_ANY, wxT("--"), wxDefaultPosition, wxDefaultSize, 0 );
-	fgSizer1->Add( m_button3, 0, wxALL, 5 );
-
-
-	bSizer9111->Add( fgSizer1, 1, wxEXPAND, 5 );
 
 
 	this->SetSizer( bSizer9111 );
@@ -125,8 +83,6 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	this->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ) );
 	m_staticText1511->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ), NULL, this );
 	m_button3111->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::OnPSGPX ), NULL, this );
-	m_button2->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::sizeplus ), NULL, this );
-	m_button3->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::sizeminus ), NULL, this );
 }
 
 m_Dialog::~m_Dialog()
@@ -135,7 +91,5 @@ m_Dialog::~m_Dialog()
 	this->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ) );
 	m_staticText1511->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ), NULL, this );
 	m_button3111->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::OnPSGPX ), NULL, this );
-	m_button2->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::sizeplus ), NULL, this );
-	m_button3->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::sizeminus ), NULL, this );
 
 }

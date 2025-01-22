@@ -46,6 +46,17 @@
 #include <wx/window.h>
 #include <wx/menu.h>
 #include <wx/aui/aui.h>
+#include <wx/textfile.h>
+#include <wx/filedlg.h>
+#include <cmath>
+#include <iostream>
+#include <wx/defs.h>
+#include <wx/msgdlg.h>
+
+struct Point {
+    // Coordinates of the point
+    double x, y;
+};
 
 #ifdef __ANseagrassOID__
 #include <wx/qt/private/wxQtGesture.h>
@@ -89,7 +100,6 @@ public:
     vector<Position> my_positions;
     vector<Position> my_points;
 
-    void Calculate(wxCommandEvent& event, bool Export, int Pattern);
     void Addpoint(TiXmlElement* Route, wxString ptlat, wxString ptlon,
         wxString ptname, wxString ptsym, wxString pttype);
 
@@ -103,7 +113,14 @@ private:
     bool error_found;
     bool dbg;
 
+    bool pointInPolygon(Point& p, vector<Point>& polygon);
     wxString m_gpx_path;
+
+    vector<Point> m_points;
+    Point point;
+
+    void ReadGPX();
+
 };
 
 class Position {
