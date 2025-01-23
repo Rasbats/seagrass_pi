@@ -53,6 +53,7 @@
 #include <wx/defs.h>
 #include <wx/msgdlg.h>
 #include <wx/timer.h>
+#include <wx/dirdlg.h>
 
 struct Point {
     // Coordinates of the point
@@ -96,6 +97,7 @@ public:
 #endif
 
     void OnPSGPX(wxCommandEvent& event);
+    void OnSelectGPX(wxCommandEvent& event);
     bool OpenXML();
 
     vector<Position> my_positions;
@@ -121,8 +123,11 @@ private:
 
     vector<Point> m_points;
     Point point;
+    bool is_inside;
+    wxString dirname;
 
     void ReadGPX();
+    void OnCreateDirectory(wxCommandEvent& event);
 
 };
 

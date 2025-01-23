@@ -25,7 +25,7 @@
  ***************************************************************************
  * Massive thanks here:
  * https://stackoverflow.com/questions/14149099/raycasting-algorithm-with-gps-coordinates
- * 
+ *
  */
 
 #include "seagrassgui_impl.h"
@@ -58,6 +58,8 @@ Dlg::Dlg(wxWindow* parent, seagrass_pi* ppi)
     pPlugIn = ppi;
     pParent = parent;
 
+    m_textCtrl_gpx->SetValue(pPlugIn->StandardPath());
+
     pPlugIn->m_bShowseagrass = false;
     m_Timer.Start(3000);
 
@@ -74,7 +76,11 @@ Dlg::Dlg(wxWindow* parent, seagrass_pi* ppi)
 #endif
 }
 
-Dlg::~Dlg() { }
+Dlg::~Dlg() {
+
+  m_Timer.Stop();
+
+}
 
 #ifdef __ANseagrassOID__
 wxPoint g_startPos;
@@ -235,9 +241,43 @@ void Dlg::Addpoint(TiXmlElement* Route, wxString ptlat, wxString ptlon,
     // done adding point
 }
 
+void Dlg::OnCreateDirectory(wxCommandEvent& event)
+{
+
+    dirname = pPlugIn->StandardPath();
+
+    wxDirDialog dlg(
+        NULL, "Choose input directory", dirname, wxDD_DEFAULT_STYLE);
+
+    if (dlg.ShowModal()
+        == wxID_OK) { // if the user click "Open" instead of "Cancel"
+
+        if (dlg.GetPath() != wxEmptyString) {
+            dirname = dlg.GetPath();
+            m_textCtrl_gpx->SetValue(dirname);
+            // wxMessageBox(filename);
+        } else {
+            wxMessageBox(_("No Directory selected"));
+            return;
+        }
+    }
+}
+
 void Dlg::OnPSGPX(wxCommandEvent& event) { OpenXML(); }
 
 void Dlg::OnClose(wxCloseEvent& event) { pPlugIn->OnseagrassDialogClose(); }
+
+void Dlg::OnSelectGPX(wxCommandEvent& event)
+{
+
+    if (OpenXML()) {
+        is_inside = pointInPolygon(point, m_points);
+        if (is_inside)
+            wxMessageBox("Inside seagrass habitat", "Seagrass");
+        else
+            wxMessageBox("Outside seagrass habitat", "Seagrass");
+    }
+}
 
 bool Dlg::OpenXML()
 {
@@ -248,6 +288,8 @@ bool Dlg::OpenXML()
     int response = wxID_CANCEL;
     int my_count = 0;
 
+    is_inside = false;
+
     wxString CurrentDocPath;
     wxString filename;
 
@@ -255,8 +297,8 @@ bool Dlg::OpenXML()
     wxString inters = "";
 
     wxString s = "/";
-    const char* pName = "seagrass_pi";
-    wxString m_gpx_path = GetPluginDataDir(pName) + s + "data" + s;
+    // const char* pName = "seagrass_pi";
+    wxString m_gpx_path = dirname;
 
     // wxMessageBox(m_gpx_path);
 
@@ -341,7 +383,7 @@ bool Dlg::OpenXML()
                     }
                 }
             }
-        }           
+        }
     }
     double myval = 0;
 
@@ -350,25 +392,19 @@ bool Dlg::OpenXML()
     };
     point.y = myval;
 
-    //inters = wxString::Format("%f", point.y);
-    //wxMessageBox(inters);
+    // inters = wxString::Format("%f", point.y);
+    // wxMessageBox(inters);
 
     px = m_lon->GetValue();
     if (!px.ToDouble(&myval)) { /* error! */
     };
     point.x = myval;
 
-    //inters = wxString::Format("%f", point.x);
-    //wxMessageBox(inters);
+    // inters = wxString::Format("%f", point.x);
+    // wxMessageBox(inters);
 
     // point.x = 4.125299;
     // point.y = 50.347776;
-
-    bool is_inside = pointInPolygon(point, m_points);
-    if (is_inside)
-        wxMessageBox("inside");
-    else
-        wxMessageBox("outside");
 
     return true;
 
@@ -390,8 +426,8 @@ bool Dlg::pointInPolygon(Point& p, vector<Point>& polygon)
     Point p0;
     p0.x = 0;
     p0.y = 0;
-   
-    p0 = m_points[n-1];
+
+    p0 = m_points[n - 1];
 
     for (it = polygon.begin(); it != polygon.end(); ++it) {
         if (p0.y != it->y) {
@@ -427,6 +463,22 @@ void Dlg::OnTimer(wxTimerEvent&)
     wxString fixlon = wxString::Format("%f", m_lastfix.Lon);
     m_lon->SetValue(fixlon);
 
+    point.y = m_lastfix.Lat;
+
+    // inters = wxString::Format("%f", point.y);
+    // wxMessageBox(inters);
+
+    point.x = m_lastfix.Lon;
+    if (m_points.size() != 0)
+        is_inside = pointInPolygon(point, m_points);
+    if (is_inside) {
+        m_checkBox30->SetValue(true); 
+        m_checkBox30->SetOwnForegroundColour("RED");
+
+    } else {
+        m_checkBox30->SetValue(false);
+        m_checkBox30->SetOwnForegroundColour("BLACK");
+    }
 }
 
 void Dlg::NMEAStringAll(const wxString& sentence) { }

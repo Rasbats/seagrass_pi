@@ -91,7 +91,7 @@ public:
 
     wxPoint m_cursor_position;
     PlugIn_Position_Fix_Ex m_fix;
-    
+    wxString StandardPath();
 
 private:
     Dlg* m_pDialog;
@@ -113,6 +113,7 @@ private:
 
 
     bool m_bseagrassShowIcon;
+    
 
     wxBitmap m_panelBitmap;
 };

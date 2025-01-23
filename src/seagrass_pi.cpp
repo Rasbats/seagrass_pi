@@ -107,6 +107,9 @@ int seagrass_pi::Init(void)
     //    And load the configuration items
     LoadConfig();
 
+
+
+
     //    This PlugIn needs a toolbar icon, so request its insertion
     if (m_bseagrassShowIcon)
 
@@ -282,4 +285,19 @@ void seagrass_pi::SetNMEASentence(wxString& sentence)
 void seagrass_pi::SetPositionFixEx(PlugIn_Position_Fix_Ex& pfix)
 {
     m_fix = pfix;
+}
+
+wxString seagrass_pi::StandardPath()
+{
+    wxString stdPath(*GetpPrivateApplicationDataLocation());
+    wxString s = wxFileName::GetPathSeparator();
+
+    stdPath += s + "plugins" + s + "seagrass";
+    if (!wxDirExists(stdPath))
+        wxMkdir(stdPath);
+    // stdPath = stdPath + s + "data";
+    // if (!wxDirExists(stdPath)) wxMkdir(stdPath);
+
+    stdPath += s;
+    return stdPath;
 }

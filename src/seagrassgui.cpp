@@ -72,6 +72,34 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 
 	bSizer9111->Add( bSizer71, 0, wxEXPAND, 5 );
 
+	wxBoxSizer* bSizer72;
+	bSizer72 = new wxBoxSizer( wxVERTICAL );
+
+	m_checkBox30 = new wxCheckBox( this, wxID_ANY, wxT("30 ft: Eelgrass grows here."), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer72->Add( m_checkBox30, 0, wxALL|wxEXPAND, 5 );
+
+	m_checkBox11 = new wxCheckBox( this, wxID_ANY, wxT("10 ft: Please slow down."), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer72->Add( m_checkBox11, 0, wxALL, 5 );
+
+	m_checkBox6 = new wxCheckBox( this, wxID_ANY, wxT("6 ft:  Potential threat to eelgrass—boaters slow down."), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer72->Add( m_checkBox6, 0, wxALL, 5 );
+
+
+	bSizer9111->Add( bSizer72, 1, wxEXPAND, 5 );
+
+	wxBoxSizer* bSizer9;
+	bSizer9 = new wxBoxSizer( wxVERTICAL );
+
+	m_staticText4 = new wxStaticText( this, wxID_ANY, wxT("Seagrass .gpx directory:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText4->Wrap( -1 );
+	bSizer9->Add( m_staticText4, 0, wxALL, 5 );
+
+	m_textCtrl_gpx = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer9->Add( m_textCtrl_gpx, 0, wxALL|wxEXPAND, 5 );
+
+
+	bSizer9111->Add( bSizer9, 1, wxEXPAND, 5 );
+
 
 	this->SetSizer( bSizer9111 );
 	this->Layout();
@@ -83,7 +111,7 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	// Connect Events
 	this->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ) );
 	m_staticText1511->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ), NULL, this );
-	m_button3111->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::SelectGPX ), NULL, this );
+	m_button3111->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::OnSelectGPX ), NULL, this );
 	this->Connect( m_Timer.GetId(), wxEVT_TIMER, wxTimerEventHandler( m_Dialog::OnTimer ) );
 }
 
@@ -92,7 +120,7 @@ m_Dialog::~m_Dialog()
 	// Disconnect Events
 	this->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ) );
 	m_staticText1511->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ), NULL, this );
-	m_button3111->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::SelectGPX ), NULL, this );
+	m_button3111->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::OnSelectGPX ), NULL, this );
 	this->Disconnect( m_Timer.GetId(), wxEVT_TIMER, wxTimerEventHandler( m_Dialog::OnTimer ) );
 
 }
