@@ -59,6 +59,7 @@ Dlg::Dlg(wxWindow* parent, seagrass_pi* ppi)
     pParent = parent;
 
     pPlugIn->m_bShowseagrass = false;
+    m_Timer.Start(3000);
 
 #ifdef __ANseagrassOID__
 
@@ -416,3 +417,16 @@ bool Dlg::pointInPolygon(Point& p, vector<Point>& polygon)
     // poly.
     return c % 2 != 0;
 }
+
+void Dlg::OnTimer(wxTimerEvent&)
+{
+    m_lastfix = pPlugIn->m_fix;
+    wxString fixlat = wxString::Format("%f", m_lastfix.Lat);
+    m_lat->SetValue(fixlat);
+
+    wxString fixlon = wxString::Format("%f", m_lastfix.Lon);
+    m_lon->SetValue(fixlon);
+
+}
+
+void Dlg::NMEAStringAll(const wxString& sentence) { }

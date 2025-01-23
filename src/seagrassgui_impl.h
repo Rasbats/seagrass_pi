@@ -52,6 +52,7 @@
 #include <iostream>
 #include <wx/defs.h>
 #include <wx/msgdlg.h>
+#include <wx/timer.h>
 
 struct Point {
     // Coordinates of the point
@@ -105,7 +106,9 @@ public:
 
     wxString rte_start;
     wxString rte_end;
-
+    void NMEAStringAll(const wxString& sentence);
+    void OnTimer(wxTimerEvent&);
+    PlugIn_Position_Fix_Ex m_lastfix, m_lasttimerfix;
 
 private:
     void OnClose(wxCloseEvent& event);

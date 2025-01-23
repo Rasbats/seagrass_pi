@@ -534,7 +534,7 @@
                 <property name="gripper">0</property>
                 <property name="hidden">0</property>
                 <property name="id">wxID_ANY</property>
-                <property name="label">Test for inside/outside habitat</property>
+                <property name="label">Select Habitat .gpx</property>
                 <property name="margins"></property>
                 <property name="markup">0</property>
                 <property name="max_size"></property>
@@ -567,11 +567,20 @@
                 <property name="window_extra_style"></property>
                 <property name="window_name"></property>
                 <property name="window_style"></property>
-                <event name="OnButtonClick">OnPSGPX</event>
+                <event name="OnButtonClick">SelectGPX</event>
               </object>
             </object>
           </object>
         </object>
+      </object>
+      <object class="wxTimer" expanded="true">
+        <property name="enabled">0</property>
+        <property name="id">wxID_ANY</property>
+        <property name="name">m_Timer</property>
+        <property name="oneshot">0</property>
+        <property name="period">3000</property>
+        <property name="permission">public</property>
+        <event name="OnTimer">OnTimer</event>
       </object>
     </object>
   </object>

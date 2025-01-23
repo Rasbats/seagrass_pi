@@ -66,7 +66,7 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	wxBoxSizer* bSizer71;
 	bSizer71 = new wxBoxSizer( wxVERTICAL );
 
-	m_button3111 = new wxButton( this, wxID_ANY, wxT("Test for inside/outside habitat"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_button3111 = new wxButton( this, wxID_ANY, wxT("Select Habitat .gpx"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer71->Add( m_button3111, 0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 5 );
 
 
@@ -76,13 +76,15 @@ m_Dialog::m_Dialog( wxWindow* parent, wxWindowID id, const wxString& title, cons
 	this->SetSizer( bSizer9111 );
 	this->Layout();
 	bSizer9111->Fit( this );
+	m_Timer.SetOwner( this, m_Timer.GetId() );
 
 	this->Centre( wxBOTH );
 
 	// Connect Events
 	this->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ) );
 	m_staticText1511->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ), NULL, this );
-	m_button3111->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::OnPSGPX ), NULL, this );
+	m_button3111->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::SelectGPX ), NULL, this );
+	this->Connect( m_Timer.GetId(), wxEVT_TIMER, wxTimerEventHandler( m_Dialog::OnTimer ) );
 }
 
 m_Dialog::~m_Dialog()
@@ -90,6 +92,7 @@ m_Dialog::~m_Dialog()
 	// Disconnect Events
 	this->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ) );
 	m_staticText1511->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( m_Dialog::OnDLeftClick ), NULL, this );
-	m_button3111->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::OnPSGPX ), NULL, this );
+	m_button3111->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_Dialog::SelectGPX ), NULL, this );
+	this->Disconnect( m_Timer.GetId(), wxEVT_TIMER, wxTimerEventHandler( m_Dialog::OnTimer ) );
 
 }

@@ -22,6 +22,7 @@
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/icon.h>
+#include <wx/timer.h>
 #include <wx/frame.h>
 
 ///////////////////////////////////////////////////////////////////////////
@@ -42,12 +43,14 @@ class m_Dialog : public wxFrame
 
 		// Virtual event handlers, override them in your derived class
 		virtual void OnDLeftClick( wxMouseEvent& event ) { event.Skip(); }
-		virtual void OnPSGPX( wxCommandEvent& event ) { event.Skip(); }
+		virtual void SelectGPX( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnTimer( wxTimerEvent& event ) { event.Skip(); }
 
 
 	public:
 		wxTextCtrl* m_lat;
 		wxTextCtrl* m_lon;
+		wxTimer m_Timer;
 
 		m_Dialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxSTAY_ON_TOP|wxTAB_TRAVERSAL );
 
