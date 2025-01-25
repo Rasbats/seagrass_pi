@@ -75,7 +75,10 @@ Dlg::Dlg(wxWindow* parent, seagrass_pi* ppi)
 #endif
 }
 
-Dlg::~Dlg() { m_Timer.Stop(); }
+Dlg::~Dlg() { 
+if (m_Timer.IsRunning())
+        m_Timer.Stop();
+}
 
 #ifdef __ANseagrassOID__
 wxPoint g_startPos;
@@ -260,9 +263,12 @@ void Dlg::OnCreateDirectory(wxCommandEvent& event)
 
 void Dlg::OnPSGPX(wxCommandEvent& event) { OpenXML(); }
 
-void Dlg::OnClose(wxCloseEvent& event) { 
-  m_Timer.Stop();
-  pPlugIn->OnseagrassDialogClose(); 
+void Dlg::OnClose(wxCloseEvent& event)
+{
+    if (m_Timer.IsRunning())
+        m_Timer.Stop();
+
+    pPlugIn->OnseagrassDialogClose();
 }
 
 void Dlg::OnSelectGPX(wxCommandEvent& event)
@@ -270,11 +276,6 @@ void Dlg::OnSelectGPX(wxCommandEvent& event)
 
     if (OpenXML()) {
         m_Timer.Start(3000);
-        is_inside = pointInPolygon(point, m_points);
-        if (is_inside)
-            wxMessageBox("Inside seagrass habitat", "Seagrass");
-        else
-            wxMessageBox("Outside seagrass habitat", "Seagrass");
     }
 }
 
@@ -463,26 +464,46 @@ void Dlg::OnTimer(wxTimerEvent&)
     m_lon->SetValue(fixlon);
 
     point.y = m_lastfix.Lat;
-
-    // inters = wxString::Format("%f", point.y);
-    // wxMessageBox(inters);
-
     point.x = m_lastfix.Lon;
-    if (m_points.size() != 0)
+
+    if (m_points.size() != 0) {
         is_inside = pointInPolygon(point, m_points);
-    if (is_inside && mydepth < 30) {
-        m_checkBox30->SetValue(true);
-        m_checkBox30->SetOwnForegroundColour("RED");
+    }
+
+    if (is_inside) {
+
+        if (mydepth < 30) {
+            m_checkBox30->SetValue(true);
+            m_checkBox30->SetOwnForegroundColour("RED");
+        }
+        if (mydepth < 10) {
+
+            m_checkBox11->SetValue(true);
+            m_checkBox11->SetOwnForegroundColour("RED");
+        }
+        if (mydepth < 6) {
+            m_checkBox6->SetValue(true);
+            m_checkBox6->SetOwnForegroundColour("RED");
+        }
 
     } else {
+
+      is_inside = false;
+
         m_checkBox30->SetValue(false);
         m_checkBox30->SetOwnForegroundColour("BLACK");
+
+        m_checkBox11->SetValue(false);
+        m_checkBox11->SetOwnForegroundColour("BLACK");
+
+        m_checkBox6->SetValue(false);
+        m_checkBox6->SetOwnForegroundColour("BLACK");
     }
 }
 
 void Dlg::NMEAStringAll(wxString& sentence)
 {
-    //depth = parseNMEASentence(sentence);  
+    // depth = parseNMEASentence(sentence);
     NMEAString(sentence);
 }
 
@@ -515,7 +536,6 @@ void Dlg::NMEAString(wxString& string)
             }
         }
     }
-   // wxString s_depth = wxString::Format("%f", depth);
-   // wxMessageBox(s_depth);
+    // wxString s_depth = wxString::Format("%f", depth);
+    // wxMessageBox(s_depth);
 }
-   

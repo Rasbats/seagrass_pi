@@ -140,6 +140,8 @@ bool seagrass_pi::DeInit(void)
 {
     //    Record the dialog position
     if (NULL != m_pDialog) {
+        if (m_pDialog->m_Timer.IsRunning())
+            m_pDialog->m_Timer.Stop();
         // Capture dialog position
         wxPoint p = m_pDialog->GetPosition();
         SetCalculatorDialogX(p.x);
@@ -261,8 +263,12 @@ bool seagrass_pi::SaveConfig(void)
 void seagrass_pi::OnseagrassDialogClose()
 {
     m_bShowseagrass = false;
+    
+    if (m_pDialog->m_Timer.IsRunning())
+        m_pDialog->m_Timer.Stop();
+
     SetToolbarItemState(m_leftclick_tool_id, m_bShowseagrass);
-    m_pDialog->Hide();
+    m_pDialog-> Hide();
     SaveConfig();
 
     RequestRefresh(m_parent_window); // refresh main window
