@@ -82,4 +82,8 @@ macro(add_plugin_libraries)
 
   add_subdirectory("${CMAKE_SOURCE_DIR}/opencpn-libs/plugingl")
   target_link_libraries(${PACKAGE_NAME} ocpn::plugingl)
+
+  add_subdirectory("${CMAKE_SOURCE_DIR}/opencpn-libs/nmea0183")
+  target_link_libraries(${PACKAGE_NAME} ocpn::nmea0183)
+
 endmacro ()

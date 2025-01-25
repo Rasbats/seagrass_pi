@@ -278,7 +278,7 @@ void seagrass_pi::SetCursorLatLon(double lat, double lon)
 
 void seagrass_pi::SetNMEASentence(wxString& sentence)
 {
-    if (m_pDialog)
+    if (NULL != m_pDialog)
         m_pDialog->NMEAStringAll(sentence);
 }
 

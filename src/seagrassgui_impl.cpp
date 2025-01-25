@@ -61,7 +61,6 @@ Dlg::Dlg(wxWindow* parent, seagrass_pi* ppi)
     m_textCtrl_gpx->SetValue(pPlugIn->StandardPath());
 
     pPlugIn->m_bShowseagrass = false;
-    m_Timer.Start(3000);
 
 #ifdef __ANseagrassOID__
 
@@ -76,11 +75,7 @@ Dlg::Dlg(wxWindow* parent, seagrass_pi* ppi)
 #endif
 }
 
-Dlg::~Dlg() {
-
-  m_Timer.Stop();
-
-}
+Dlg::~Dlg() { m_Timer.Stop(); }
 
 #ifdef __ANseagrassOID__
 wxPoint g_startPos;
@@ -265,12 +260,16 @@ void Dlg::OnCreateDirectory(wxCommandEvent& event)
 
 void Dlg::OnPSGPX(wxCommandEvent& event) { OpenXML(); }
 
-void Dlg::OnClose(wxCloseEvent& event) { pPlugIn->OnseagrassDialogClose(); }
+void Dlg::OnClose(wxCloseEvent& event) { 
+  m_Timer.Stop();
+  pPlugIn->OnseagrassDialogClose(); 
+}
 
 void Dlg::OnSelectGPX(wxCommandEvent& event)
 {
 
     if (OpenXML()) {
+        m_Timer.Start(3000);
         is_inside = pointInPolygon(point, m_points);
         if (is_inside)
             wxMessageBox("Inside seagrass habitat", "Seagrass");
@@ -471,8 +470,8 @@ void Dlg::OnTimer(wxTimerEvent&)
     point.x = m_lastfix.Lon;
     if (m_points.size() != 0)
         is_inside = pointInPolygon(point, m_points);
-    if (is_inside) {
-        m_checkBox30->SetValue(true); 
+    if (is_inside && mydepth < 30) {
+        m_checkBox30->SetValue(true);
         m_checkBox30->SetOwnForegroundColour("RED");
 
     } else {
@@ -481,4 +480,42 @@ void Dlg::OnTimer(wxTimerEvent&)
     }
 }
 
-void Dlg::NMEAStringAll(const wxString& sentence) { }
+void Dlg::NMEAStringAll(wxString& sentence)
+{
+    //depth = parseNMEASentence(sentence);  
+    NMEAString(sentence);
+}
+
+void Dlg::NMEAString(wxString& string)
+{
+    m_NMEA0183 << string;
+    mPriDepth = 5;
+
+    if (m_NMEA0183.PreParse()) {
+        if (m_NMEA0183.LastSentenceIDReceived == _T("DBT")) {
+            if (mPriDepth >= 5) {
+                if (m_NMEA0183.Parse()) {
+                    /*
+                     double m_NMEA0183.Dbt.DepthFeet;
+                     double m_NMEA0183.Dbt.DepthMeters;
+                     double m_NMEA0183.Dbt.DepthFathoms;
+                     */
+                    double depth = NAN;
+                    if (!std::isnan(m_NMEA0183.Dbt.DepthMeters))
+                        depth = m_NMEA0183.Dbt.DepthMeters;
+                    else if (!std::isnan(m_NMEA0183.Dbt.DepthFeet))
+                        depth = m_NMEA0183.Dbt.DepthFeet * 0.3048;
+                    else if (!std::isnan(m_NMEA0183.Dbt.DepthFathoms))
+                        depth = m_NMEA0183.Dbt.DepthFathoms * 1.82880;
+
+                    if (!std::isnan(depth)) {
+                        mydepth = depth;
+                    }
+                }
+            }
+        }
+    }
+   // wxString s_depth = wxString::Format("%f", depth);
+   // wxMessageBox(s_depth);
+}
+   

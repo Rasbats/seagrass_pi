@@ -54,6 +54,8 @@
 #include <wx/msgdlg.h>
 #include <wx/timer.h>
 #include <wx/dirdlg.h>
+#include "nmea0183.h"
+#include <wx/tokenzr.h>
 
 struct Point {
     // Coordinates of the point
@@ -72,6 +74,7 @@ using namespace std;
 
 class seagrass_pi;
 class Position;
+class NMEA0183;
 
 class Dlg : public m_Dialog {
 public:
@@ -108,7 +111,7 @@ public:
 
     wxString rte_start;
     wxString rte_end;
-    void NMEAStringAll(const wxString& sentence);
+    void NMEAStringAll(wxString& sentence);
     void OnTimer(wxTimerEvent&);
     PlugIn_Position_Fix_Ex m_lastfix, m_lasttimerfix;
 
@@ -128,7 +131,10 @@ private:
 
     void ReadGPX();
     void OnCreateDirectory(wxCommandEvent& event);
-
+    void NMEAString(wxString& string);
+    NMEA0183 m_NMEA0183; // Used to parse NMEA Sentences
+    short mPriDepth;
+    double mydepth;
 };
 
 class Position {
